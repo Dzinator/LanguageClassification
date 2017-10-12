@@ -9,11 +9,6 @@ import re
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
-#with open('train_set_x.csv', 'rt', encoding="utf8") as inp, open('preprocess.csv', 'wb') as out:
- #   writer = csv.writer(out)
-  #  for row in csv.reader(inp):
-   #     if row['Text'] != "":
-    #        writer.writerow(row)
 train_x = pd.read_csv('train_set_x.csv',encoding="utf-8")
 train_y = pd.read_csv('train_set_y.csv')
 print(train_x.size)
@@ -26,13 +21,7 @@ train_x['Text'] = train_x['Text'].str.replace('\d+', '')
 print(train_x.size)
 #remove words starting with https
 train_x['Text'] = train_x['Text'].str.replace('https\w+', '')
-#remove emoticons
-#train_x['Text'] = train_x['Text'].str.replace(u'[' u'\U0001F300-\U0001F64F'u'\U0001F300-\U0001F5FF'u'\U0001F1E0-\U0001F1FF'u'\U0001F680-\U0001F6FF'u'\u2600-\u26FF\u2700-\u27BF]+', '')
 
-#remove chinese
-#train_x['Text'] = train_x['Text'].str.replace(u'[⺀-⺙⺛-⻳⼀-⿕々〇〡-〩〸-〺〻㐀-䶵一-鿃豈-鶴侮-頻並-龎]', '')
-#train_x['Text'] = train_x['Text'].str.replace(u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+','')
-#train_x['Text'] = train_x['Text'].str.replace('\u2122', '')
 train_x['Text'] = train_x['Text'].str.replace('½','')
 train_x['Text'] = train_x['Text'].str.replace('¾','')
 train_x['Text'] = train_x['Text'].str.replace('¼','')
