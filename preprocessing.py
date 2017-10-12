@@ -36,6 +36,7 @@ train_x['Text'] = train_x['Text'].apply(lambda col: col.strip())
 merged_df = pd.merge(train_y,train_x,on='Id')
 
 vectorizer = TfidfVectorizer(analyzer='char')
-X = vectorizer.fit_transform(train_x['Text'].values)
+X = vectorizer.fit_transform(train_x['Text'].values).toarray()
 print(X.shape)
 print(vectorizer.get_feature_names());
+np.savetxt("id_vector.csv",X,delimiter=",")
