@@ -1,4 +1,4 @@
-# This implementation of NaiveBayes assumes only categorical varaibles
+# This implementation of NaiveBayes assumes either categorical or continuous variables (the code has to be modified a tiny bit ti use one or the other)
 
 NBayes = function(x,y, testX) {
 	# x is a data.frame with the data
@@ -21,13 +21,14 @@ NBayes = function(x,y, testX) {
 	dataFull["class"] = y
 
 	#print("the quantity below is the total amount of each of the features in the dataset")
-	allXiFreq = apply(dataFull[-1], 2, function(z) as.data.frame(table(unlist(z))))
+	#allXiFreq = apply(dataFull[-1], 2, function(z) as.data.frame(table(unlist(z))))
+	
 	for (class in unique(y)) {
 	  print(class)
 		dataFullClass = dataFull[dataFull$"class" == class,]
 	
 		#print("the quantity below is the total amount of each of the features with the label 'class' in the dataset")
-		allXiClassFreq = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) as.data.frame(table(unlist(z))))
+		#allXiClassFreq = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) as.data.frame(table(unlist(z))))
 
 		#print("a function to calculate P(xi|y) with xi = z and y = class with normalization so that features we haven't seen received equal probability to each class")
 		pxiy = function(vect, i) {
@@ -52,15 +53,26 @@ NBayes = function(x,y, testX) {
 		  xi = unlist(xi)
 			return ((xiy + 1)/(xi + 1 + length(unique(y))))
 		}
+		  
+		  ## print("a second function for continuous data; we assume each feature is normally distributed as use pdf to aproximate P(xi|y)")
+		  allXiClassMeanSd = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) c(mean(z), sd(z)))
+
+		  pxiy2 = function(vect, i) {
+		    print(i)
+		    mean = allXiClassMeanSd[1,i]
+		    sd = allXiClassMeanSd[2,i]
+		    probs = sapply(vect, function(z) pnorm(z, mean=mean, sd=sd))
+		    return(probs)
+		  }
+		
+	
 
 		#print("we calculate a single P(xi|y), then their product and finally, their product with the P(y)")
-		beg = sapply(1:ncol(testX[-1]), function(i) pxiy(as.numeric(as.vector(t(testX[-1][i]))), i))
+		beg = sapply(1:ncol(testX[-1]), function(i) pxiy2(as.numeric(as.vector(t(testX[-1][i]))), i))
 		#print("That's just a product IIP(xi|y)")
 		mid = apply(beg, 1, prod)
 		#print("to not to get lost -- mid is a vertical vector with as many rows as there are examples which gives IIP(xi) for each example")
 		finProdClass = mid*freqs[freqs[1] == class,]$py
-		#print(finProdClass)
-		#print(class(finProdClass))
 
 		otp = cbind(otp, finProdClass)
 		names(otp)[which(unique(y) == class)+1] = class
@@ -68,14 +80,12 @@ NBayes = function(x,y, testX) {
 
 	#print("otp gives us a data frame with a column for example id and columns for probabilities of belonging to each class")
 	ans = colnames(otp[-1])[apply(otp[-1],1,which.max)]
-	# the command below will be needed in our particular case, where classes are numeric, not strings
-	# ans = sapply(ans, function(x) as.numeric(x)]
 	print(otp)
 	print(py)
 	return(cbind(otp[1], class= as.numeric(ans)))
 }
-			     
-			     datx = read.csv("id_vector_train.csv")
+
+datx = read.csv("id_vector_train.csv")
 daty = read.csv("train_set_y.csv")
 daty = daty[daty[1][,] %in% datx[1][,],]
 tesx = read.csv("id_vector_test.csv")
@@ -91,3 +101,6 @@ sampDaty = daty[-samp,][-1]
 
 sampTesx = datx[samp,]
 preds = NBayes(sampDatx[1:219065,], sampDaty[1:219065,], sampTesx[,])
+
+## Real prediction (very bad one)
+realPreds = NBayes(datx[1:273829,], daty[1:273829,][[-1]], tesx[,])
