@@ -108,10 +108,9 @@ for i in range(polish_size):
         
 finaltrain = pd.concatenate([ndf,df_french,ndf2,ndf3,ndf4])
     
-#remove empty cells
-finaltrain['Text'].replace('', np.nan, inplace=True)
-finaltrain.dropna(subset=['Text'], inplace=True)
-test_x.dropna(subset=['Text'], inplace=True)
+train_x['Text'].replace('', '0', inplace=True)
+train_x['Text'].replace(np.nan, '0', inplace=True)
+test_x['Text'].replace(np.nan, '0', inplace=True)
 #print(test_x.size)
 
 #remove numbers
@@ -136,10 +135,6 @@ test_x['Text'] = test_x['Text'].str.replace(r'([^\s\w]|_)+','')
 #removing non-latin characters
 finaltrain['Text'] = finaltrain['Text'].str.replace(u'[^\x00-\x7F\x80-\xFF\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]','')
 test_x['Text'] = test_x['Text'].str.replace(u'[^\x00-\x7F\x80-\xFF\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]','')
-
-#remove extra white space
-finaltrain['Text'] = finaltrain['Text'].apply(lambda col: col.strip())
-test_x['Text'] = test_x['Text'].apply(lambda col: col.strip())
 
 #merged_df = pd.merge(train_y,train_x,on='Id')
 #new train y with fewer rows
