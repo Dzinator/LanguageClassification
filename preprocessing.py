@@ -4,8 +4,6 @@ Created on Tue Oct 10 09:31:38 2017
 
 @author: AASHIMA SINGH
 """
-import csv
-import re
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
@@ -15,11 +13,10 @@ test_x = pd.read_csv('test_set_x.csv', encoding ="utf-8")
 train_y = pd.read_csv('train_set_y.csv')
 print(train_x.size)
 
-#remove empty cells
 train_x['Text'].replace('', np.nan, inplace=True)
-train_x.dropna(subset=['Text'], inplace=True)
-test_x.dropna(subset=['Text'], inplace=True)
-print(test_x.size)
+train_x['Text'].replace(np.nan, '0' , inplace=True)
+test_x['Text'].replace(np.nan, '0' , inplace=True)
+#print(test_x.size)
 
 #remove numbers
 train_x['Text'] = train_x['Text'].str.replace('\d+', '')
@@ -73,7 +70,7 @@ Xtest = np.delete(Xtest,posd,1)
 for f in feature_train:
     if f not in feature_test:
         pos = feature_train.index(f)
-        print(pos)
+        #print(pos)
         if pos<(len(Xtest[0])):
             Xtest = np.insert(Xtest,pos,0,axis=1)
 xsize = len(Xtest)
@@ -81,8 +78,8 @@ zerocols = np.zeros((xsize,1),dtype=np.int);
 Xtest = np.concatenate((Xtest,zerocols),axis=1)
 
 #forming vectors of 0s and 1s
-X[X>0] = 1;
-Xtest[Xtest>0] = 1;
+#X[X>0] = 1;
+#Xtest[Xtest>0] = 1;
 
 #add column of ID to 2D array
 col = np.array(train_x['Id'])
