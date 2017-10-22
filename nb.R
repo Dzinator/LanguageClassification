@@ -143,102 +143,75 @@ NBayes = function(x,y, testX) {
 
 ## genetic algorithm to optimize the weights
 #fitBayes = function(w, x,y, testX) {
-  # x is a data.frame with the data
-  # y is the class vector
-  # testX is what we want to predict (data frame)
-  # the function returns predictions for testX
   
-  #print("First we get the P(y) term")
-  freqs = as.data.frame(table(y))
-  py = sapply(freqs[,2], function(x) x/length(y))
-  freqs["py"] = py
+  #freqs = as.data.frame(table(y))
+  #py = sapply(freqs[,2], function(x) x/length(y))
+  #freqs["py"] = py
+
+  #otp = data.frame("Id" = testX[,1])
   
-  #print("Then, for each row and each class we find P(y|x) ~ P(x|y)P(x) ~ IIP(x_i|y)P(y)")
+  #dataFull = x
+  #dataFull["class"] = y
   
-  #print("here we'll store all the probabilities for each point in testX belonging to some class")
-  otp = data.frame("Id" = testX[,1])
-  
-  dataFull = x
-  dataFull["class"] = y
-  
-  #print("the quantity below is the total amount of each of the features in the dataset")
-  #allXiFreq = apply(dataFull[-1], 2, function(z) as.data.frame(table(unlist(z))))
-  intgr = function(i, z) {
-    res = allXiFreq[[i]][allXiFreq[[i]][1] == z,]$Freq
-    if(length(res) == 0)
-      return(0)
-    return(res)
-  }
-  
-  for (class in unique(y)) {
-    print(class)
-    dataFullClass = dataFull[dataFull$"class" == class,]
-    yi = length(t(dataFullClass[1]))
-    sumsAll = sum(colSums(dataFullClass[-c(1,ncol(dataFullClass))]))
+  #for (class in unique(y)) {
+    #print(class)
+    #dataFullClass = dataFull[dataFull$"class" == class,]
+    #yi = length(t(dataFullClass[1]))
+    #sumsAll = sum(colSums(dataFullClass[-c(1,ncol(dataFullClass))]))
     
-    #print("the quantity below is the total amount of each of the features with the label 'class' in the dataset")
-    #allXiClassFreq = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) as.data.frame(table(unlist(z))))
-    intgrClass = function(i, z) {
-      res = allXiClassFreq[[i]][allXiClassFreq[[i]][1] == z,]$Freq
-      if(length(res) == 0)
-        return(0)
-      return(res)
-    }
-    sumsXi = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) sum(z))
-    sumsXi = as.vector(t(sumsXi))
-    
-    #print("a function to calculate P(xi|y) with xi = z and y = class with normalization so that features we haven't seen received equal probability to each class")
-    pxiy = function(vect, i) {
+    #sumsXi = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) sum(z))
+    #sumsXi = as.vector(t(sumsXi))
+
+    #pxiy = function(vect, i) {
       ## do the sapply for the unique categories and then copy, that should make it faster
-      print(i)
-      sortedCats = unique(sort(vect))
-      fr = rep(0, length(sortedCats))
-      sortedCats = setNames(fr, sortedCats)
-      uxiy = sapply(names(sortedCats), function(z) intgrClass(i, z))
-      if(length(uxiy[[1]]) == 0) {uxiy = sortedCats}
-      xiy = sapply(vect, function(z) uxiy[as.character(z)])
-      idxiy = sapply(xiy, is.na)
-      xiy[idxiy] = 0
-      xiy = setNames(xiy, NULL)
-      xiy = unlist(xiy)
-      return ((xiy + 1)/(yi + 1 + length(unique(y))))
-    }
+      #print(i)
+      #sortedCats = unique(sort(vect))
+      #fr = rep(0, length(sortedCats))
+      #sortedCats = setNames(fr, sortedCats)
+      #uxiy = sapply(names(sortedCats), function(z) intgrClass(i, z))
+      #if(length(uxiy[[1]]) == 0) {uxiy = sortedCats}
+      #xiy = sapply(vect, function(z) uxiy[as.character(z)])
+      #idxiy = sapply(xiy, is.na)
+      #xiy[idxiy] = 0
+      #xiy = setNames(xiy, NULL)
+      #xiy = unlist(xiy)
+      #return ((xiy + 1)/(yi + 1 + length(unique(y))))
+    #}
     
     ## print("a second function for continuous data; we assume each feature is normally distributed as use pdf to aproximate P(xi|y)")
-    allXiClassMeanSd = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) c(mean(z), sd(z)))
+    #allXiClassMeanSd = apply(dataFullClass[-c(1,ncol(dataFullClass))],  2, function(z) c(mean(z), sd(z)))
     
-    pxiy2 = function(vect, i) {
-      print(i)
-      mean = allXiClassMeanSd[1,i]
-      sd = allXiClassMeanSd[2,i]
-      probs = sapply(vect, function(z) pnorm(z, mean=mean, sd=sd))
-      return(probs)
-    }
+    #pxiy2 = function(vect, i) {
+      #print(i)
+      #mean = allXiClassMeanSd[1,i]
+      #sd = allXiClassMeanSd[2,i]
+      #probs = sapply(vect, function(z) pnorm(z, mean=mean, sd=sd))
+      #return(probs)
+    #}
     
-    pxiy3 = function(vect, i) {
-      prob = (w[i]*sumsXi[i] + 1)/(w[i]*sumsAll + 1 + length(unique(y)))
-      probs = sapply(vect, function(z) if(z == 0) {1} else {(prob^z)^w[i]})
-      return (probs)
-    }
+    #pxiy3 = function(vect, i) {
+      #prob = (w[i]*sumsXi[i] + 1)/(w[i]*sumsAll + 1 + length(unique(y)))
+      #probs = sapply(vect, function(z) if(z == 0) {1} else {(prob^z)^w[i]})
+      #return (probs)
+    #}
     
     #print("we calculate a single P(xi|y), then their product and finally, their product with the P(y)")
-    beg = sapply(1:ncol(testX[-1]), function(i) pxiy3(as.numeric(as.vector(t(testX[-1][i]))), i))
-    #print(beg)
+    #beg = sapply(1:ncol(testX[-1]), function(i) pxiy3(as.numeric(as.vector(t(testX[-1][i]))), i))
     #print("That's just a product IIP(xi|y)")
-    mid = apply(beg, 1, prod)
+    #mid = apply(beg, 1, prod)
     #print("to not to get lost -- mid is a vertical vector with as many rows as there are examples which gives IIP(xi) for each example")
-    finProdClass = mid*freqs[freqs[1] == class,]$py
+    #finProdClass = mid*freqs[freqs[1] == class,]$py
     
-    otp = cbind(otp, finProdClass)
-    names(otp)[which(unique(y) == class)+1] = class
-  }
+    #otp = cbind(otp, finProdClass)
+    #names(otp)[which(unique(y) == class)+1] = class
+  #}
   
   #print("otp gives us a data frame with a column for example id and columns for probabilities of belonging to each class")
-  ans = colnames(otp[-1])[apply(otp[-1],1,which.max)]
-  ret = cbind(otp[1], Category= as.numeric(ans))
-  print(length(which(t(ret[2]) == sampTesy))/length(sampTesy))
-  return(length(which(t(ret[2]) == sampTesy))/length(sampTesy))
-}
+  #ans = colnames(otp[-1])[apply(otp[-1],1,which.max)]
+  #ret = cbind(otp[1], Category= as.numeric(ans))
+  #print(length(which(t(ret[2]) == sampTesy))/length(sampTesy))
+  #return(length(which(t(ret[2]) == sampTesy))/length(sampTesy))
+#}
 #wgt = NBayes(sampDatx, sampDaty, sampTesx) ## the code was changed to return just the weights
 #minn = min(wgt)
 #maxx = max(wgt)
@@ -323,5 +296,6 @@ write.csv(realPreds, "nb_preds10.csv", row.names = FALSE)
 
 #valRealPreds = NBayes(remDatx, daty, remTesx)
 #write.csv(valRealPreds, "/home/julek/Desktop/nb_preds7.csv", row.names = FALSE)
+
 
 
