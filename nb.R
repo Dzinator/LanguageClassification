@@ -23,9 +23,10 @@ NBayes = function(x,y, testX) {
 	dataFull = x
 	dataFull["class"] = y
 
-	#print("the quantity below is the total amount of each of the features in the dataset")
+	#print("the quantity below is the total amount of each of the levels of all features in the dataset")
 	#it's useful with categorical variables
 	#allXiFreq = apply(dataFull[-1], 2, function(z) as.data.frame(table(unlist(z))))
+	#helper function
 	intgr = function(i, z) {
 	  res = allXiFreq[[i]][allXiFreq[[i]][1] == z,]$Freq
 	  if(length(res) == 0)
@@ -141,7 +142,7 @@ NBayes = function(x,y, testX) {
 }
 
 ## genetic algorithm to optimize the weights
-fitBayes = function(w, x,y, testX) {
+#fitBayes = function(w, x,y, testX) {
   # x is a data.frame with the data
   # y is the class vector
   # testX is what we want to predict (data frame)
@@ -238,14 +239,14 @@ fitBayes = function(w, x,y, testX) {
   print(length(which(t(ret[2]) == sampTesy))/length(sampTesy))
   return(length(which(t(ret[2]) == sampTesy))/length(sampTesy))
 }
-wgt = NBayes(sampDatx, sampDaty, sampTesx) ## the code was changed to return just the weights
-minn = min(wgt)
-maxx = max(wgt)
-sd = sd(wgt)
-inputMin = sapply(wgt, function(x) if(x >= sd) x-sd else(minn))
-inputMax = sapply(wgt, function(x) x+sd)
-library(GA)
-bestW = ga(type = "real-valued", fitness = fitBayes, sampDatx, sampDaty, sampTesx, min = rep(0,161), max = inputMax, popSize = 100, maxiter = 100, run = 30, keepBest = TRUE)
+#wgt = NBayes(sampDatx, sampDaty, sampTesx) ## the code was changed to return just the weights
+#minn = min(wgt)
+#maxx = max(wgt)
+#sd = sd(wgt)
+#inputMin = sapply(wgt, function(x) if(x >= sd) x-sd else(minn))
+#inputMax = sapply(wgt, function(x) x+sd)
+#library(GA)
+#bestW = ga(type = "real-valued", fitness = fitBayes, sampDatx, sampDaty, sampTesx, min = rep(0,161), max = inputMax, popSize = 100, maxiter = 100, run = 30, keepBest = TRUE)
 
 ## read the data
 datx = read.csv("id_vector_train_BIG.csv", header = FALSE)
@@ -259,67 +260,68 @@ remDatx = datx[-rem]
 remTesx = tesx[-rem]
 
 ## Tests
-ids = seq(1:273830)
-sizsam = 27383*2
-set.seed(12345)
-samp = sample(ids, sizsam)
-samp = sort(samp)
+#ids = seq(1:273830)
+#sizsam = 27383*2
+#set.seed(12345)
+#samp = sample(ids, sizsam)
+#samp = sort(samp)
 
-sampDatx = remDatx[-samp,]
-sampDaty = daty[-samp]
+#sampDatx = remDatx[-samp,]
+#sampDaty = daty[-samp]
 
-sampTesx = remDatx[samp,]
-sampTesy = daty[samp]
-preds = NBayes(sampDatx, sampDaty, sampTesx)
-print(length(which(t(preds[2]) == sampTesy))/length(sampTesy))
+#sampTesx = remDatx[samp,]
+#sampTesy = daty[samp]
+#preds = NBayes(sampDatx, sampDaty, sampTesx)
+#print(length(which(t(preds[2]) == sampTesy))/length(sampTesy))
 
 ## Maybe cross-validation (baaad results)
-library(caret)
-otcm = c(1:length(daty))
-flds = createFolds(otcm, k=10, list=TRUE, returnTrain=FALSE)
-sumAcc = 0
-allFlds = data.frame(Id = numeric(0), Category = numeric(0))
-for(i in c(1:10)) {
-  fldx = datx[-flds[[i]],]
-  fldy = daty[-flds[[i]]]
-  fldValx = datx[flds[[i]],]
-  fldValy = daty[flds[[i]]]
-  fldPreds = NBayes(fldx, fldy, fldValx)
-  acc = length(which(fldPreds[2] == fldValy[2])) / length(t(fldPreds[2]))
-  print(acc)
-  sumAcc = sumAcc + acc
-  allFlds = rbind(allFlds, fldPreds)
-}
-print(sumAcc/10)
+#library(caret)
+#otcm = c(1:length(daty))
+#flds = createFolds(otcm, k=10, list=TRUE, returnTrain=FALSE)
+#sumAcc = 0
+#allFlds = data.frame(Id = numeric(0), Category = numeric(0))
+#for(i in c(1:10)) {
+#  fldx = datx[-flds[[i]],]
+#  fldy = daty[-flds[[i]]]
+#  fldValx = datx[flds[[i]],]
+#  fldValy = daty[flds[[i]]]
+#  fldPreds = NBayes(fldx, fldy, fldValx)
+#  acc = length(which(fldPreds[2] == fldValy[2])) / length(t(fldPreds[2]))
+#  print(acc)
+#  sumAcc = sumAcc + acc
+#  allFlds = rbind(allFlds, fldPreds)
+#}
+#print(sumAcc/10)
 
 ## Real prediction
 realPreds = NBayes(datx, daty, tesx)
-write.csv(realPreds, "/home/julek/Desktop/nb_preds10.csv", row.names = FALSE)
+write.csv(realPreds, "nb_preds10.csv", row.names = FALSE)
 
 ## InfGain did not provide better results...
-library(CORElearn)
-IG = attrEval(Cat~., cbind(remDatx, daty[2])[-1], estimator = "InfGain")
-GR = attrEval(Cat~., cbind(remDatx, daty[2])[-1], estimator = "GainRatio")
-valuable = (IG > 0.01)
-valuable = (GR > 0.05)
-valDatx = remDatx[valuable]
-valTesx = remTesx[valuable]
+#library(CORElearn)
+#IG = attrEval(Cat~., cbind(remDatx, daty[2])[-1], estimator = "InfGain")
+#GR = attrEval(Cat~., cbind(remDatx, daty[2])[-1], estimator = "GainRatio")
+#valuable = (IG > 0.01)
+#valuable = (GR > 0.05)
+#valDatx = remDatx[valuable]
+#valTesx = remTesx[valuable]
 
-ids = seq(1:273830)
-sizsam = 27383*2
-set.seed(12345)
-samp = sample(ids, sizsam)
-samp = sort(samp)
+#ids = seq(1:273830)
+#sizsam = 27383*2
+#set.seed(12345)
+#samp = sample(ids, sizsam)
+#samp = sort(samp)
 
-valSampDatx = valDatx[-samp,]
-valSampDaty = daty[-samp]
+#valSampDatx = valDatx[-samp,]
+#valSampDaty = daty[-samp]
 
-valSampTesx = valDatx[samp,]
-valSampTesy = daty[samp]
+#valSampTesx = valDatx[samp,]
+#valSampTesy = daty[samp]
 
-valPreds = NBayes(valSampDatx, valSampDaty, valSampTesx)
-print(length(which(t(valPreds[2]) == valSampTesy))/length(valSampTesy))
+#valPreds = NBayes(valSampDatx, valSampDaty, valSampTesx)
+#print(length(which(t(valPreds[2]) == valSampTesy))/length(valSampTesy))
 
-valRealPreds = NBayes(remDatx, daty, remTesx)
-write.csv(valRealPreds, "/home/julek/Desktop/nb_preds7.csv", row.names = FALSE)
+#valRealPreds = NBayes(remDatx, daty, remTesx)
+#write.csv(valRealPreds, "/home/julek/Desktop/nb_preds7.csv", row.names = FALSE)
+
 
