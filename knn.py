@@ -8,20 +8,52 @@
 
 import csv
 import random
+import pickle
 
 
-def read_data(train_data=[], test_data=[]):
-    with open('id_vector_train.csv', 'rb') as csv_data:
-        lines = csv.reader(csv_data)
+def extract_data(train_data=[], test_data=[], from_train=False):
+    # restore/save processed train data
+    try:
+        with open('sanitized_pickle.bin', 'r') as fp:
+            train_data = pickle.loads(fp.read())
+        print '-Loaded pickeld data'
+    except:
+        with open('id_vector_train.csv', 'rb') as data, \
+                open('train_set_y.csv', 'rb') as label_data:
+            lines = csv.reader(data)
+            labels = csv.reader(label_data)
+            # skip headers
+            next(lines)
+            next(labels)
 
-        for l in lines:
-            train_data.append(l)
+            count = 0
+            for line, label in zip(lines, labels):
+                row = [int(float(x)) for x in (line + [label[-1]])]
 
-    with open('id_vector_test.csv', 'rb') as csv_data:
-        lines = csv.reader(csv_data)
+                count += 1
 
-        for l in lines:
-            test_data.append(l)
+                if from_train:
+                    if count > 200:
+                        break
+                    if random.random() < 0.8:
+                        train_data.append(row)
+                    else:
+                        test_data.append(row)
+                else:
+                    train_data.append(row)
+
+        with open('sanitized_pickle.bin', 'w') as fp:
+            fp.write(pickle.dumps(train_data))
+
+
+    if not from_train:
+        with open('id_vector_test.csv', 'rb') as csv_data:
+            lines = csv.reader(csv_data)
+
+            next(lines)
+
+            for l in lines:
+                test_data.append(l)
 
 
 def hamming_distance(str1, str2):
@@ -38,7 +70,7 @@ def euclidean_distance(row1, row2):
         for x, y in zip(row1, row2):
             distance += pow((x - y), 2)
 
-        return math.sqrt(distance)
+        return distance
     else:
         return float('nan')
 
@@ -75,29 +107,22 @@ def majority_lang(neighbors):
     return sorted_langs[-1][0]
 
 
-def accuracy(test_data, classifications):
-    correct_count = 0.0
-    for i in range(len(test_data)):
-        if test_data[i][-1] is classifications[i]:
-            correct_count += 1
-
-    return correct_count / float(len(test_data))
-
-
 train_data = []
 test_data = []
 classifications = []
 k = 3
 
-read_data(train_data, test_data)
+extract_data(train_data, test_data, True)
 
+accurate = 0
 for row in test_data:
     neighbors = get_neighbors(row, train_data, k)
 
     result = majority_lang(neighbors)
 
-    print row[0], result
+    if row[-1] == result:
+        accurate += 1
 
     classifications.append(result)
 
-
+print('Predicted %d out of %d' % (accurate, len(test_data)))
