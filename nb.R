@@ -3,6 +3,9 @@
 ## turn off "e" notation
 options(scipen=999)
 
+## set wd
+#setwd("/path/to/csvs")
+
 NBayes = function(x,y, testX) {
 	# x is a data.frame with the data
 	# y is the class vector
@@ -222,12 +225,12 @@ NBayes = function(x,y, testX) {
 #bestW = ga(type = "real-valued", fitness = fitBayes, sampDatx, sampDaty, sampTesx, min = rep(0,161), max = inputMax, popSize = 100, maxiter = 100, run = 30, keepBest = TRUE)
 
 ## read the data
-datx = read.csv("id_vector_train_BIG.csv", header = FALSE)
+datx = read.csv("id_vector_train.csv", header = FALSE)
 daty = read.csv("train_y_new.csv", header = FALSE)
 daty = daty[daty[1][,] %in% datx[1][,],]
 names(daty) = c("ID", "Cat")
 daty = as.vector(t(daty[-1]))
-tesx = read.csv("id_vector_test_BIG.csv", header = FALSE)
+tesx = read.csv("id_vector_test.csv", header = FALSE)
 rem = intersect(which(colSums(tesx) < 20), which(colSums(datx)<20))
 remDatx = datx[-rem]
 remTesx = tesx[-rem]
@@ -267,7 +270,7 @@ remTesx = tesx[-rem]
 #print(sumAcc/10)
 
 ## Real prediction
-realPreds = NBayes(datx, daty, tesx)
+realPreds = NBayes(remDatx, daty, remTesx)
 write.csv(realPreds, "nb_preds10.csv", row.names = FALSE)
 
 ## InfGain did not provide better results...
